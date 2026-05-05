@@ -192,7 +192,10 @@ class TodoList extends Component {
   constructor() {
     super();
 
-    this.state = this.loadState();
+    this.state = this.loadState() || {
+      tasks: [
+      ]
+    };
     this.nextTaskId = this.getNextTaskId();
 
     this.onAddTask = this.onAddTask.bind(this);
