@@ -47,7 +47,6 @@ function createElement(tag, attributes = {}, children = [], callbacks = []) {
 class Component {
   constructor(props = {}) {
     this.props = props;
-    this.state = {};
     this._children = new Map();
     this._renderedChildKeys = new Set();
   }
@@ -122,23 +121,23 @@ class AddTask extends Component {
 class Task extends Component {
   constructor(props) {
     super(props);
-    this.state = { isDeleteArmed: false };
+    this.state = { isClickedOnce: false };
 
     this.onDeleteClick = this.onDeleteClick.bind(this);
-    this.onToggleCompleted = this.onToggleCompleted.bind(this);
+    this.onCheckBoxCompleted = this.onCheckBoxCompleted.bind(this);
   }
 
   update(nextProps) {
     if (nextProps && nextProps.task && this.props.task && nextProps.task.id !== this.props.task.id) {
-      this.state.isDeleteArmed = false;
+      this.state.isClickedOnce = false;
     }
 
     return super.update(nextProps);
   }
 
   onDeleteClick() {
-    if (!this.state.isDeleteArmed) {
-      this.state.isDeleteArmed = true;
+    if (!this.state.isClickedOnce) {
+      this.state.isClickedOnce = true;
       this.update();
       return;
     }
@@ -148,9 +147,9 @@ class Task extends Component {
     }
   }
 
-  onToggleCompleted() {
-    if (typeof this.props.onToggleCompleted === "function") {
-      this.props.onToggleCompleted(this.props.task.id);
+  onCheckBoxCompleted() {
+    if (typeof this.props.onCheckBoxCompleted === "function") {
+      this.props.onCheckBoxCompleted(this.props.task.id);
     }
   }
 
@@ -160,7 +159,7 @@ class Task extends Component {
     const labelClass = task.completed
       ? "task-label task-label--completed"
       : "task-label";
-    const deleteButtonClass = this.state.isDeleteArmed
+    const deleteButtonClass = this.state.isClickedOnce
       ? "delete-btn delete-btn--armed"
       : "delete-btn";
     const deleteButtonText = "🗑️";
@@ -173,7 +172,7 @@ class Task extends Component {
           checked: task.completed,
         },
         [],
-        [{ event: "change", handler: this.onToggleCompleted }]
+        [{ event: "change", handler: this.onCheckBoxCompleted }]
       ),
       createElement("label", { class: labelClass }, task.text),
       createElement(
@@ -193,22 +192,13 @@ class TodoList extends Component {
   constructor() {
     super();
 
-    const persistedState = this.loadState();
-    this.state = persistedState || {
-      tasks: [
-        { id: 1, text: "Сделать домашку", completed: false },
-        { id: 2, text: "Сделать практику", completed: false },
-        { id: 3, text: "Пойти домой", completed: false },
-      ],
-      newTaskText: "",
-    };
-
+    this.state = this.loadState();
     this.nextTaskId = this.getNextTaskId();
 
     this.onAddTask = this.onAddTask.bind(this);
     this.onAddInputChange = this.onAddInputChange.bind(this);
     this.onDeleteTask = this.onDeleteTask.bind(this);
-    this.onToggleTaskCompleted = this.onToggleTaskCompleted.bind(this);
+    this.onCheckBoxTaskCompleted = this.onCheckBoxTaskCompleted.bind(this);
   }
 
   getNextTaskId() {
@@ -306,7 +296,7 @@ class TodoList extends Component {
     this.update();
   }
 
-  onToggleTaskCompleted(taskId) {
+  onCheckBoxTaskCompleted(taskId) {
     this.state.tasks = this.state.tasks.map((task) => {
       if (task.id !== taskId) {
         return task;
@@ -335,7 +325,7 @@ class TodoList extends Component {
       this.renderChild(Task, task.id, {
         task,
         onDelete: this.onDeleteTask,
-        onToggleCompleted: this.onToggleTaskCompleted,
+        onCheckBoxCompleted: this.onCheckBoxTaskCompleted,
       })
     );
 
